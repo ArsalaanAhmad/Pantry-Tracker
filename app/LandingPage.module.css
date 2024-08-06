@@ -1,0 +1,42 @@
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #fdf6e4;
+}
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 10px); /* Adjust based on the height of your navbar */
+    padding-top: 10px; /* Add padding equivalent to the navbar height */
+    text-align: center;
+  }
+
+.mainTitle{
+   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+   padding: 2%;
+   font-size: 40px;
+  }
+
+ 
+.signInButton {
+  padding: 10px 20px;
+  background-color: green;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.signInButton:hover {
+  background-color: darkgreen;
+}
+
+.Description{
+  padding: 1%;
+  font-size: 30 px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
