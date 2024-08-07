@@ -1,13 +1,15 @@
-// src/pages/app.js
 
 'use client';
-import Image from 'next/image';
 import styles from '../app/page.module.css';
 import { useState, useEffect } from 'react';
-import { Box, Stack, Typography, Button, Modal, TextField } from '@mui/material';
+import { Box, Typography, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
 import { firestore } from '../app/firebase';
-import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc } from "firebase/firestore";
-
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, Timestamp } from "firebase/firestore";
+import DeleteIcon from '@mui/icons-material/Delete';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { getRecipeSuggestions } from '../src/services/groqService';
+import { getAuth } from "firebase/auth";
 
 const style = {
   position: 'absolute',
@@ -28,44 +30,62 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [expirationDate, setExpirationDate] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [items, setItems] = useState([]);
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  const handleGetSuggestions = async () => {
+    try {
+      const recipeSuggestions = await getRecipeSuggestions(items);
+      setSuggestions(recipeSuggestions);
+    } catch (error) {
+      console.error('Error getting suggestions:', error);
+    }
+  };
 
   const updateInventory = async () => {
-    const snapshot = query(collection(firestore, 'inventory'));
+    if (!user) return;
+    const snapshot = query(collection(firestore, `users/${user.uid}/inventory`));
     const docs = await getDocs(snapshot);
     const inventoryList = [];
+    const itemsList = [];
     docs.forEach((doc) => {
-      inventoryList.push({ name: doc.id, ...doc.data() });
+      const data = doc.data();
+      inventoryList.push({ name: doc.id, ...data });
+      itemsList.push(doc.id); // Add item name to items list
     });
     setInventory(inventoryList);
+    setItems(itemsList); // Set items state
   };
 
   useEffect(() => {
     updateInventory();
-  }, []);
+  }, [user]);
 
   const addItem = async (item) => {
-    const docRef = doc(collection(firestore, 'inventory'), item);
+    if (!user) return;
+    const docRef = doc(collection(firestore, `users/${user.uid}/inventory`), item.name);
     const docSnap = await getDoc(docRef);
+    const newItem = {
+      ...item,
+      expirationDate: item.expirationDate ? Timestamp.fromDate(new Date(item.expirationDate)) : null,
+    };
     if (docSnap.exists()) {
       const { quantity } = docSnap.data();
-      await setDoc(docRef, { quantity: quantity + 1 });
+      await setDoc(docRef, { ...newItem, quantity: quantity + 1 });
     } else {
-      await setDoc(docRef, { quantity: 1 });
+      await setDoc(docRef, newItem);
     }
     await updateInventory();
   };
 
   const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, 'inventory'), item);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const { quantity } = docSnap.data();
-      if (quantity === 1) {
-        await deleteDoc(docRef);
-      } else {
-        await setDoc(docRef, { quantity: quantity - 1 });
-      }
-    }
+    if (!user) return;
+    const docRef = doc(collection(firestore, `users/${user.uid}/inventory`), item);
+    await deleteDoc(docRef);
     await updateInventory();
   };
 
@@ -73,87 +93,61 @@ export default function Home() {
   const handleClose = () => setOpen(false);
 
   return (
-    <Box
-      width="100vw"
-      height="100vh"
-      display={'flex'}
-      justifyContent={'center'}
-      flexDirection={'column'}
-      alignItems={'center'}
-      gap={2}
-    >
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Add Item
-          </Typography>
-          <Stack width="100%" direction={'row'} spacing={2}>
-            <TextField
-              id="outlined-basic"
-              label="Item"
-              variant="outlined"
-              fullWidth
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
-            />
-            <Button
-              variant="outlined"
-              onClick={() => {
-                addItem(itemName);
-                setItemName('');
-                handleClose();
-              }}
-            >
-              Add
-            </Button>
-          </Stack>
+    <Box className={styles.container}>
+      <Box className={styles.contentWrapper}>
+        <Box className={styles.formWrapper}>
+          <Typography variant="h6" gutterBottom>Add Pantry Item</Typography>
+          <TextField fullWidth label="Name" value={itemName} onChange={(e) => setItemName(e.target.value)} margin="normal" />
+          <TextField fullWidth label="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} margin="normal" />
+          <DatePicker
+            selected={expirationDate}
+            onChange={(date) => setExpirationDate(date)}
+            dateFormat="MM/dd/yyyy"
+            customInput={<TextField fullWidth label="Expiration Date" margin="normal" />}
+          />
+          <Button variant="contained" fullWidth onClick={() => addItem({ name: itemName, quantity, expirationDate })}>Add Item</Button>
+          <Button className="mt-2" variant="contained" fullWidth onClick={handleGetSuggestions}>Get Recipe Suggestions</Button>
         </Box>
-      </Modal>
-      <Button variant="contained" onClick={handleOpen}>
-        Add New Item
-      </Button>
-      <Box border={'1px solid #333'}>
-        <Box
-          width="800px"
-          height="100px"
-          bgcolor={'#ADD8E6'}
-          display={'flex'}
-          justifyContent={'center'}
-          alignItems={'center'}
-        >
-          <Typography variant={'h2'} color={'#333'} textAlign={'center'}>
-            Inventory Items
-          </Typography>
-        </Box>
-        <Stack width="800px" height="300px" spacing={2} overflow={'auto'}>
-          {inventory.map(({ name, quantity }) => (
-            <Box
-              key={name}
-              width="100%"
-              minHeight="150px"
-              display={'flex'}
-              justifyContent={'space-between'}
-              alignItems={'center'}
-              bgcolor={'#f0f0f0'}
-              paddingX={5}
-            >
-              <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
-                {name.charAt(0).toUpperCase() + name.slice(1)}
-              </Typography>
-              <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
-                Quantity: {quantity}
-              </Typography>
-              <Button variant="contained" onClick={() => removeItem(name)}>
-                Remove
-              </Button>
+        <Box className={styles.tableWrapper}>
+          <Typography variant="h6" gutterBottom>Pantry Items</Typography>
+          <TextField fullWidth label="Search Items" margin="normal" />
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell>Expiration</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {inventory.map(({ name, quantity, expirationDate }) => (
+                  <TableRow key={name}>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{quantity}</TableCell>
+                    <TableCell>{expirationDate instanceof Timestamp ? expirationDate.toDate().toLocaleDateString() : expirationDate}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => removeItem(name)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {suggestions.length > 0 && (
+            <Box mt={4}>
+              <Typography variant="h6" gutterBottom>Recipe Suggestions</Typography>
+              <ul>
+                {suggestions.map((suggestion, index) => (
+                  <li key={index}>{suggestion}</li>
+                ))}
+              </ul>
             </Box>
-          ))}
-        </Stack>
+          )}
+        </Box>
       </Box>
     </Box>
   );
