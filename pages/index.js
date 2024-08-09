@@ -62,9 +62,9 @@ const LandingPage = () => {
           </div>
           <div className={styles.sectionBox}>
             <h2>About</h2>
-            <p className='BoxDesc'>MyPantryMan is your ultimate kitchen assistant, designed to streamline pantry management and reduce food waste. With real-time inventory tracking powered by Firebase, you'll always know what ingredients you have on hand, eliminating the need for last-minute grocery runs.
+            <p className='BoxDesc'>MyPantryMan is your ultimate kitchen assistant, designed to streamline pantry management and reduce food waste. With real-time inventory tracking powered by Firebase, youll always know what ingredients you have on hand, eliminating the need for last-minute grocery runs.
 
-Our app goes beyond basic management by offering AI-driven recipe suggestions through GroqAPI, helping you create delicious meals with the items already in your pantry. Whether you’re cooking for yourself or your family, MyPantryMan provides personalized recipe ideas tailored to your available ingredients.
+Our app goes beyond basic management by offering AI-driven recipe suggestions through GroqAPI, helping you create delicious meals with the items already in your pantry. Whether youre cooking for yourself or your family, MyPantryMan provides personalized recipe ideas tailored to your available ingredients.
 
 MyPantryMan is built for modern households, featuring multi-user support and secure cloud storage, ensuring your data is accessible. With user-friendly design and robust security, it makes managing your kitchen easier.</p>
           </div>
