@@ -57,7 +57,7 @@ const LandingPage = () => {
               <li>Secure Contact Form for valid Customer Support</li>
               <li>Completely made with efficient Next.js and React</li>
               <li>Seamless Cross-Platform Access</li>
-              <li>Advanced Analytics & Insights [Coming soon]!</li>
+              <li>Advanced Analytics & Insights!</li>
             </ul>
           </div>
           <div className={styles.sectionBox}>
