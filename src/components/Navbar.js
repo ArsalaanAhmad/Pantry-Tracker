@@ -20,18 +20,18 @@ const Navbar = () => {
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static" sx={{ backgroundColor: 'white', width: '100%' }}>
+        <AppBar position="static" sx={{ backgroundColor: 'rgba(232, 232, 232,0.9)', width: '100%' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
               <ShoppingCartIcon sx={{ color: 'black' }} />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'black', fontFamily: 'Roboto, Arial, sans-serif' }}>
-              PantryPie.
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'black', fontFamily: 'Kablammo' }}>
+              MyPantryMan
             </Typography>
-            <IconButton color="inherit" href="https://github.com/BurhanCantCode" target="_blank" rel="noopener noreferrer">
+            <IconButton color="inherit" href="https://github.com/ArsalaanAhmad/Pantry-Tracker" target="_blank" rel="noopener noreferrer">
               <GitHubIcon sx={{ color: 'black' }} />
             </IconButton>
-            <IconButton color="inherit" href="https://linkedin.com/in/burhankhatri" target="_blank" rel="noopener noreferrer">
+            <IconButton color="inherit" href="https://www.linkedin.com/in/arsalaan-ahmad/" target="_blank" rel="noopener noreferrer">
               <LinkedInIcon sx={{ color: 'black' }} />
             </IconButton>
           </Toolbar>
